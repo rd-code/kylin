@@ -17,3 +17,12 @@ func (c *Context) Json(data interface{}) (err error) {
 	}
 	return nil
 }
+
+func (c *Context) Parse(data interface{}) (err error) {
+	decoder := json.NewDecoder(c.Request.Body)
+
+	if err = decoder.Decode(data); err != nil {
+		return
+	}
+	return
+}
