@@ -14,6 +14,12 @@ const (
 	Error
 )
 
+const (
+	PrefixInfo  = "INFO:"
+	PrefixWarn  = "WARN:"
+	PrefixError = "ERROR:"
+)
+
 //定义日志的接口
 type Logger interface {
 	//设置日志等级
@@ -51,19 +57,19 @@ func (l *loggerImpl) Info(format string, args ...interface{}) (err error) {
 	if l.level > Info {
 		return
 	}
-	return l.write(format, args...)
+	return l.write(PrefixInfo+format, args...)
 }
 
 func (l *loggerImpl) Warn(format string, args ...interface{}) (err error) {
 	if l.level > Warn {
 		return
 	}
-	return l.write(format, args...)
+	return l.write(PrefixWarn+format, args...)
 }
 
 func (l *loggerImpl) Error(format string, args ...interface{}) (err error) {
 	if l.level > Error {
 		return
 	}
-	return l.write(format, args...)
+	return l.write(PrefixError+format, args...)
 }
