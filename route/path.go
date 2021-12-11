@@ -1,7 +1,7 @@
 package route
 
 import (
-	"path"
+	"fmt"
 	"strings"
 )
 
@@ -13,7 +13,6 @@ func formatPath(url string) string {
 	if len(url) != 1 && url[len(url)-1] == '/' {
 		url = url[:len(url)-1]
 	}
-	path.Clean(url)
 	return url
 }
 
@@ -22,20 +21,74 @@ func formatPath(url string) string {
 func addPath(path1, path2 string) string {
 	path1 = formatPath(path1)
 	path2 = formatPath(path2)
-	return path.Join(path1, path2)
-}
-
-//检查path是否合法
-func checkPath(path string) bool {
-	if len(path) == 0 {
-		return false
+	if len(path1)==1{
+		return path2
 	}
-	if len(path) == 1 {
-		return path == "/"
+	if len(path2)==1{
+		return path1
 	}
-	return strings.HasPrefix(path, "/") && strings.HasSuffix(path, "/")
+	return path1 + path2
 }
 
 func isCommon(path string) bool {
-	return strings.Contains(path, "/:")
+	return !strings.Contains(path, "/:")
+}
+
+const (
+	Slash byte = 47
+	Colon byte = 58
+)
+
+func getParams(path *string, start, end int) *paramElement {
+	if start >= end {
+		panic(fmt.Errorf("get params: the path:%s is invalid", *path))
+	}
+	return &paramElement{
+		start: start,
+		end:   end,
+		key:   (*path)[start:end],
+	}
+}
+
+// 解析path
+func parse(path string) []*paramElement {
+	if isCommon(path) {
+		return nil
+	}
+	size := len(path)
+
+	flag := false
+	var keyStart int
+	var params []*paramElement
+	for i := 0; i < size; i++ {
+		v := path[i]
+		if v == Slash {
+			if i+1 < size && path[i+1] == Colon {
+				if flag {
+					panic("the path is invalid:" + path)
+				}
+				flag = true
+				i += 1
+				keyStart = i
+			} else {
+				if flag {
+					params = append(params, getParams(&path, keyStart+1, i))
+					flag = false
+				}
+			}
+		}
+	}
+	if flag {
+		params = append(params, getParams(&path, keyStart+1, size))
+	}
+	return params
+}
+
+func getCustomPath(path string) *customPath {
+	items := parse(path)
+	return &customPath{
+		path:     path,
+		elements: items,
+		common:   items == nil,
+	}
 }
