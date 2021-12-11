@@ -30,7 +30,7 @@ type routerMux struct {
 
 func (r *routerMux) addCommon(path string, handler Handler) {
 	if _, ok := r.common[path]; ok {
-		panic(fmt.Sprint("the path:%s is already register", path))
+		panic(fmt.Sprintf("the path:%s is already register", path))
 	}
 	cp := getCustomPath(path)
 	if !cp.common {
