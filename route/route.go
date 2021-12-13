@@ -49,7 +49,7 @@ func (r *routerMux) add(path string, handler Handler) {
 		}
 	}
 	cp := getCustomPath(path)
-	if !cp.common {
+	if cp.common {
 		panic(fmt.Sprintf("the path:%s is common", path))
 	}
 	r.handlers = append(r.handlers, &routerHandler{
