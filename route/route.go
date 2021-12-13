@@ -92,7 +92,7 @@ type RouterServer struct {
 }
 
 func (r *RouterServer) Handler() Handler {
-	return &r.handler.handler
+	return r.handler.handler
 }
 
 func (r *RouterServer) Param(key string) string {
