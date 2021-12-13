@@ -15,14 +15,94 @@ type Router interface {
 	Put(path string, handler Handler)
 	Handle(path string, handler Handler)
 	Group(path string) Router
-	GetHandler(method, path string) Handler
+	GetHandler(method, path string) *RouterServer
+}
+
+type routerHandler struct {
+	handler    Handler
+	customPath *customPath
+}
+
+type routerMux struct {
+	common   map[string]*routerHandler
+	handlers []*routerHandler
+}
+
+func (r *routerMux) addCommon(path string, handler Handler) {
+	if _, ok := r.common[path]; ok {
+		panic(fmt.Sprintf("the path:%s is already register", path))
+	}
+	cp := getCustomPath(path)
+	if !cp.common {
+		panic(fmt.Sprintf("the path:%s is not common", path))
+	}
+	r.common[path] = &routerHandler{
+		handler:    handler,
+		customPath: cp,
+	}
+}
+
+func (r *routerMux) add(path string, handler Handler) {
+	for _, h := range r.handlers {
+		if h.customPath.path == path {
+			panic(fmt.Sprintf("the path:%s is already register", path))
+		}
+	}
+	cp := getCustomPath(path)
+	if !cp.common {
+		panic(fmt.Sprintf("the path:%s is common", path))
+	}
+	r.handlers = append(r.handlers, &routerHandler{
+		handler:    handler,
+		customPath: cp,
+	})
+}
+
+func (r *routerMux) register(path string, handler Handler) {
+	if isCommon(path) {
+		r.addCommon(path, handler)
+		return
+	}
+	r.add(path, handler)
+}
+
+func (r *routerMux) getServer(path string) (rs *RouterServer) {
+	if v, ok := r.common[path]; ok {
+		rs = &RouterServer{
+			handler: v,
+		}
+		return
+	}
+	for _, h := range r.handlers {
+		params, ok := h.customPath.match(path)
+		if ok {
+			rs = &RouterServer{
+				params:  params,
+				handler: h,
+			}
+			return
+		}
+	}
+	return
+}
+
+type RouterServer struct {
+	params  map[string]string
+	handler *routerHandler
+}
+
+func (r *RouterServer) Handler() Handler {
+	return &r.handler.handler
+}
+
+func (r *RouterServer) Param(key string) string {
+	return r.params[key]
 }
 
 type routerImpl struct {
-	parent     *routerImpl
-	path       string
-	methodPath map[string]map[string]Handler
-	allPath    map[string]Handler
+	parent    *routerImpl
+	path      string
+	routerMux map[string]*routerMux
 }
 
 func (r *routerImpl) getParent() *routerImpl {
@@ -42,30 +122,27 @@ func (r *routerImpl) Group(path string) Router {
 		parent: parent,
 		path:   path,
 	}
-
 }
 
 func (r *routerImpl) register(method, path string, handler Handler) {
 	parent := r.getParent()
 	path = addPath(r.path, path)
-	if _, ok := parent.methodPath[method]; !ok {
-		parent.methodPath[method] = make(map[string]Handler)
+	if _, ok := parent.routerMux[method]; !ok {
+		parent.routerMux[method] = &routerMux{}
 	}
 
-	data := parent.methodPath[method]
-	if _, ok := data[path]; ok {
-		panic(fmt.Sprintf("the path:%s is already register", path))
-	}
-	data [path] = handler
+	rm := parent.routerMux[method]
+	rm.register(path, handler)
+
 }
 
+const (
+	MethodHandle = "handle"
+)
+
 func (r *routerImpl) Handle(path string, handler Handler) {
-	parent := r.getParent()
-	path = addPath(r.path, path)
-	if _, ok := parent.allPath[path]; ok {
-		panic("the path is already register, path:" + path)
-	}
-	parent.allPath[path] = handler
+	r.register(MethodHandle, path, handler)
+
 }
 
 func (r *routerImpl) Get(path string, handler Handler) {
@@ -84,22 +161,27 @@ func (r *routerImpl) Put(path string, handler Handler) {
 	r.register(http.MethodPut, path, handler)
 }
 
-func (r *routerImpl) GetHandler(method, path string) Handler {
+func (r *routerImpl) getHandler(method, path string) (rs *RouterServer) {
 	parent := r.getParent()
-	if _, ok := parent.methodPath[method]; ok {
-		if v := parent.methodPath[method][path]; v != nil {
-			return v
+	if v, ok := parent.routerMux[method]; ok {
+		rs = v.getServer(path)
+		if rs != nil {
+			return
 		}
 	}
-	if v := parent.allPath[path]; v != nil {
-		return v
+	return
+}
+
+func (r *routerImpl) GetHandler(method, path string) (rs *RouterServer) {
+	if rs = r.getHandler(method, path); rs != nil {
+		return
 	}
-	return nil
+	rs = r.getHandler(MethodHandle, path)
+	return
 }
 
 func NewRouter() Router {
 	return &routerImpl{
-		methodPath: make(map[string]map[string]Handler),
-		allPath:    make(map[string]Handler),
+		routerMux: make(map[string]*routerMux),
 	}
 }

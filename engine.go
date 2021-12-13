@@ -58,10 +58,11 @@ func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	f := handler.(func(ctx *Context))
+	f := handler.Handler().(func(ctx *Context))
 	ctx := &Context{
 		Request:  request,
 		Response: response,
+		rs:       handler,
 	}
 	f(ctx)
 }
