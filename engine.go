@@ -3,8 +3,8 @@ package kylin
 import (
 	"net/http"
 
-	"github.com/rd-code/kylin/log"
-	"github.com/rd-code/kylin/route"
+	"gitee.com/rd-code/kylin/log"
+	"gitee.com/rd-code/kylin/route"
 )
 
 type Engine struct {
