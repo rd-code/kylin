@@ -8,13 +8,13 @@ import (
 )
 
 type Engine struct {
-	router route.Router
+	router route.Router[func(ctx *Context)]
 	logger log.Logger
 }
 
 func NewEngine() *Engine {
 	return &Engine{
-		router: route.NewRouter(),
+		router: route.NewRouter[func(ctx *Context)](),
 		logger: log.Default,
 	}
 }
@@ -58,11 +58,11 @@ func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	f := handler.Handler().(func(ctx *Context))
+	f := handler.Handler()
 	ctx := &Context{
 		Request:  request,
 		Response: response,
-		rs:       handler,
+		//rs:       handler,
 	}
 	f(ctx)
 }

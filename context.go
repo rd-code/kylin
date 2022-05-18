@@ -2,17 +2,13 @@ package kylin
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strconv"
-
-	"github.com/rd-code/kylin/route"
 )
 
 type Context struct {
 	Request  *http.Request
 	Response http.ResponseWriter
-	rs       *route.RouterServer
+	//rs       *route.RouterServer[func(ctx *Context)]
 }
 
 func (c *Context) Json(data interface{}) (err error) {
@@ -32,7 +28,7 @@ func (c *Context) Parse(data interface{}) (err error) {
 	return
 }
 
-func (c *Context) ParamString(key string) string {
+/*func (c *Context) ParamString(key string) string {
 	return c.rs.Param(key)
 }
 
@@ -58,4 +54,4 @@ func (c *Context) ParamInt64(key string) (int64, error) {
 		return 0, fmt.Errorf("the param is empty")
 	}
 	return strconv.ParseInt(v, 10, 64)
-}
+}*/

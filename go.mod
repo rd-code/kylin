@@ -1,3 +1,3 @@
 module github.com/rd-code/kylin
 
-go 1.15
+go 1.18
