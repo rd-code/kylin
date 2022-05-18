@@ -8,7 +8,6 @@ import (
 type Context struct {
 	Request  *http.Request
 	Response http.ResponseWriter
-	//rs       *route.RouterServer[func(ctx *Context)]
 }
 
 func (c *Context) Json(data interface{}) (err error) {

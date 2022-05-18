@@ -58,13 +58,12 @@ func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	f := handler.Handler()
 	ctx := &Context{
 		Request:  request,
 		Response: response,
 		//rs:       handler,
 	}
-	f(ctx)
+	handler(ctx)
 }
 
 func (e *Engine) Listen(addr string) {
