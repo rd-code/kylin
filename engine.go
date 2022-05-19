@@ -51,7 +51,7 @@ func (e *Engine) Group(path string) *Engine {
 }
 
 func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	e.logger.Info("receive request, method:%s, path:%s", request.Method, request.URL.Path)
+	e.logger.Info("receive request, method:%s, path:%s, ip:%s", request.Method, request.URL.Path, request.RemoteAddr)
 	handler := e.router.GetHandler(request.Method, request.URL.Path)
 	if handler == nil {
 		response.WriteHeader(http.StatusNotFound)
