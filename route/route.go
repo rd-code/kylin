@@ -64,7 +64,9 @@ func (r *routerImpl[T]) register(method, path string, t T) {
 	parent := r.getParent()
 	path = addPath(r.path, path)
 	if _, ok := parent.routerMux[method]; !ok {
-		parent.routerMux[method] = &routerMux[T]{}
+		parent.routerMux[method] = &routerMux[T]{
+			common: make(map[string]T),
+		}
 	}
 
 	rm := parent.routerMux[method]
