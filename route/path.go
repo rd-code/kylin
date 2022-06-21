@@ -6,14 +6,17 @@ import (
 )
 
 //格式化path, 最终输出为/api/v2/v1
-func formatPath(url string) string {
-	if !strings.HasPrefix(url, "/") {
-		url = "/" + url
+func formatPath(path string) string {
+	if len(path) == 0 {
+		panic("the path is empty")
 	}
-	if len(url) != 1 && url[len(url)-1] == '/' {
-		url = url[:len(url)-1]
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
 	}
-	return url
+	if len(path) != 1 && path[len(path)-1] == '/' {
+		path = path[:len(path)-1]
+	}
+	return path
 }
 
 //将两个path加起来,path1在前面，path2在后面
@@ -21,10 +24,10 @@ func formatPath(url string) string {
 func addPath(path1, path2 string) string {
 	path1 = formatPath(path1)
 	path2 = formatPath(path2)
-	if len(path1)==1{
+	if len(path1) == 1 {
 		return path2
 	}
-	if len(path2)==1{
+	if len(path2) == 1 {
 		return path1
 	}
 	return path1 + path2

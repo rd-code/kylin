@@ -13,6 +13,7 @@ type Router[T any] interface {
 	Handle(path string, t T)
 	Group(path string) Router[T]
 	GetHandler(method, path string) T
+	AddHandlers(t ...T)
 }
 
 //存储某个method下的所有请求和注册的handler
@@ -35,7 +36,9 @@ func (r *routerMux[T]) register(path string, t T) {
 }
 
 type routerImpl[T any] struct {
+	children  []*routerImpl[T]
 	parent    *routerImpl[T]
+	handlers  []T
 	path      string
 	routerMux map[string]*routerMux[T]
 }
@@ -49,6 +52,9 @@ func (r *routerImpl[T]) getParent() *routerImpl[T] {
 }
 
 func (r *routerImpl[T]) Group(path string) Router[T] {
+	if len(path) == 0 || path == "/" {
+		panic("the path:" + path + " is invalid")
+	}
 	parent := r.getParent()
 
 	path = addPath(r.path, path)
@@ -58,6 +64,10 @@ func (r *routerImpl[T]) Group(path string) Router[T] {
 		path:   path,
 	}
 
+}
+
+func (r *routerImpl[T]) AddHandlers(t ...T) {
+	r.handlers = append(r.handlers, t...)
 }
 
 func (r *routerImpl[T]) register(method, path string, t T) {

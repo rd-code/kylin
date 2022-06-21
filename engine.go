@@ -43,12 +43,13 @@ func (e *Engine) Handle(path string, f func(ctx *Context)) {
 	e.router.Handle(path, f)
 }
 
+func (e *Engine) AddHandler(f ...func(ctx *Context)) {
+	e.router.AddHandlers(f...)
+}
+
 //group 放到哪里合适
-func (e *Engine) Group(path string) *Engine {
-	res := NewEngine()
-	res.router = e.router.Group(path)
-	res.logger = e.logger
-	return res
+func (e *Engine) Group(path string) route.Router[func(*Context)] {
+	return e.router.Group(path)
 }
 
 func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) {
@@ -65,10 +66,6 @@ func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) 
 		//rs:       handler,
 	}
 	handler(ctx)
-}
-
-func (e *Engine) AddHandler(f func(ctx *Context)) {
-
 }
 
 func (e *Engine) Listen(addr string) {
