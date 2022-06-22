@@ -8,6 +8,8 @@ import (
 type Context struct {
 	Request  *http.Request
 	Response http.ResponseWriter
+	index    int
+	handlers []func(ctx *Context)
 }
 
 func (c *Context) Json(data interface{}) (err error) {
@@ -25,6 +27,17 @@ func (c *Context) Parse(data interface{}) (err error) {
 		return
 	}
 	return
+}
+
+func (c *Context) handle() {
+	for ; c.index < len(c.handlers); c.index++ {
+		handler := c.handlers[c.index]
+		handler(c)
+	}
+}
+
+func (c *Context) Stop() {
+	c.index = len(c.handlers)
 }
 
 /*func (c *Context) ParamString(key string) string {

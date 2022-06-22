@@ -63,12 +63,10 @@ func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) 
 	ctx := &Context{
 		Request:  request,
 		Response: response,
-		//rs:       handler,
+		handlers: handler,
 	}
 
-	for _, h := range handler {
-		h(ctx)
-	}
+	ctx.handle()
 }
 
 func (e *Engine) Listen(addr string) {
