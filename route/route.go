@@ -88,7 +88,8 @@ func (r *routerImpl[T]) AddHandlers(t ...T) {
 
 func (r *routerImpl[T]) register(method, path string, t T) {
 	path = addPath(r.path, path)
-	r.routerMux.register(method, path, r.appendHandler(t))
+	handlers := r.appendHandler(t)
+	r.routerMux.register(method, path, handlers...)
 }
 
 func (r *routerImpl[T]) Register(method, path string, t T) {
