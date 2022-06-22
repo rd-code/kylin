@@ -65,7 +65,11 @@ func (r *routerImpl[T]) gen(path string) *routerImpl[T] {
 	if len(path) == 0 || path == "/" {
 		panic("the path:" + path + " is invalid")
 	}
-	path = addPath(r.path, path)
+	if len(r.path) == 0 {
+		path = formatPath(path)
+	} else {
+		path = addPath(r.path, path)
+	}
 	res := &routerImpl[T]{
 		path:      path,
 		handlers:  r.handlers,
