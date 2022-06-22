@@ -130,7 +130,7 @@ func (r *routerImpl[T]) Put(path string, handler T) {
 }
 
 func (r *routerImpl[T]) getHandlers(method, path string) (t []T) {
-	if _, ok := r.routerMux.common[method]; ok {
+	if _, ok := r.routerMux.common[method]; !ok {
 		return
 	}
 	t = r.routerMux.common[method][path]
