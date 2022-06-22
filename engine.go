@@ -54,7 +54,7 @@ func (e *Engine) Group(path string) route.Router[func(*Context)] {
 
 func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	e.logger.Info("receive request, method:%s, path:%s, ip:%s", request.Method, request.URL.Path, request.RemoteAddr)
-	handler := e.router.GetHandler(request.Method, request.URL.Path)
+	handler := e.router.GetHandlers(request.Method, request.URL.Path)
 	if handler == nil {
 		response.WriteHeader(http.StatusNotFound)
 		return
@@ -65,7 +65,10 @@ func (e *Engine) ServeHTTP(response http.ResponseWriter, request *http.Request) 
 		Response: response,
 		//rs:       handler,
 	}
-	handler(ctx)
+
+	for _, h := range handler {
+		h(ctx)
+	}
 }
 
 func (e *Engine) Listen(addr string) {
